@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Upscaler - Offline</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Image Upscaler</h1>
+            <p class="subtitle">High-Quality Upscaling • Offline • Private</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-subtext">PNG, JPG, JPEG, WEBP, BMP (max 50MB)</p>
+                    <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.webp,.bmp" hidden>
+                </div>
+                
+                <div class="preview-container" id="previewContainer" style="display: none;">
+                    <img id="imagePreview" alt="Preview">
+                    <button class="btn-secondary btn-small" id="removeBtn">Remove Image</button>
+                </div>
+            </section>
+
+            <!-- Upscale Mode Selection -->
+            <section class="mode-section" id="modeSection" style="display: none;">
+                <h2>Upscale Method</h2>
+                <p class="section-description">Choose how to upscale your image</p>
+                <div class="mode-grid">
+                    <div class="mode-card selected" id="modeFactorCard" data-mode="factor">
+                        <h3>Scale Factor</h3>
+                        <p>Multiply image size by 2x, 3x, 5x, or 10x</p>
+                    </div>
+                    <div class="mode-card" id="modeResolutionCard" data-mode="resolution">
+                        <h3>Target Resolution</h3>
+                        <p>Set a specific width and height (no stretching)</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scale Factor Selection -->
+            <section class="scale-section" id="scaleSection" style="display: none;">
+                <h2>Select Scale Factor</h2>
+                <p class="section-description">Choose how much larger to make your image</p>
+                <div class="scale-grid" id="scaleGrid">
+                    <!-- Scale factors will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Target Resolution Input -->
+            <section class="resolution-section" id="resolutionSection" style="display: none;">
+                <h2>Target Resolution</h2>
+                <p class="section-description">Enter the desired resolution (image will not be stretched)</p>
+                <div class="resolution-inputs">
+                    <div class="input-group">
+                        <label for="widthInput">Width (px)</label>
+                        <input type="number" id="widthInput" placeholder="1920" min="1" max="20000">
+                    </div>
+                    <div class="input-separator">×</div>
+                    <div class="input-group">
+                        <label for="heightInput">Height (px)</label>
+                        <input type="number" id="heightInput" placeholder="1080" min="1" max="20000">
+                    </div>
+                </div>
+                <div class="resolution-presets">
+                    <button class="preset-btn" data-width="1920" data-height="1080">1080p (1920×1080)</button>
+                    <button class="preset-btn" data-width="2560" data-height="1440">1440p (2560×1440)</button>
+                    <button class="preset-btn" data-width="3840" data-height="2160">4K (3840×2160)</button>
+                    <button class="preset-btn" data-width="7680" data-height="4320">8K (7680×4320)</button>
+                </div>
+            </section>
+
+            <!-- Upscale Button -->
+            <section class="action-section" id="actionSection" style="display: none;">
+                <button class="btn-primary" id="upscaleBtn" disabled>
+                    <span id="btnText">Upscale Image</span>
+                    <span id="btnLoader" style="display: none;">
+                        <svg class="spinner" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-dashoffset="0">
+                                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                            </circle>
+                        </svg>
+                        Processing...
+                    </span>
+                </button>
+            </section>
+
+            <!-- Result Section -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <h2>Upscaled Image</h2>
+                <div class="result-container">
+                    <img id="resultImage" alt="Upscaled result">
+                    <div class="result-actions">
+                        <button class="btn-primary" id="downloadBtn">Download Image</button>
+                        <button class="btn-secondary" id="newUpscaleBtn">Upscale Another Image</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Status Messages -->
+            <div class="status-message" id="statusMessage" style="display: none;"></div>
+        </main>
+
+        <footer>
+            <p>Fully offline • No internet required • Your data stays local</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

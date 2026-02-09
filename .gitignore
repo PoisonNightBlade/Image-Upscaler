@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+Project/venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# AI Models (downloaded during installation)
+Project/models/*.pth
+Project/models/*.onnx
+!Project/models/.gitkeep
+
+# Uploaded and processed images
+Project/uploads/*
+!Project/uploads/.gitkeep
+Project/outputs/*
+!Project/outputs/.gitkeep
+
+# Configuration
+Project/models_config.json
+Installation/config_paths.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Flask
+instance/
+.webassets-cache
