@@ -33,7 +33,7 @@ Perfect for:
 
 - **Python 3.8 or higher** ([Download](https://www.python.org/downloads/))
 - **4GB+ RAM** (8GB+ recommended for large images)
-- **NVIDIA GPU** with CUDA for faster processing
+- **(Optional) NVIDIA GPU** with CUDA for faster processing
 
 ## 🚀 Quick Start (Windows)
 
@@ -134,6 +134,7 @@ image-upscaler/
 │       ├── index.html
 │       ├── script.js
 │       └── styles.css
+├── LICENSE               # MIT License
 ├── README.md            # This file
 └── SETUP.md             # Detailed setup guide
 ```
