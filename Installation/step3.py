@@ -16,9 +16,17 @@ MODEL_INFO = {
     'description': 'Photorealistic 4x upscaling model - high-quality image enhancement'
 }
 
+# Additional model for 2x (generator)
+MODEL_INFO_X2 = {
+    'name': 'RealESRGAN_x2plus',
+    'url': 'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth',
+    'filename': 'RealESRGAN_x2plus.pth',
+    'description': 'High-quality 2x upscaling model'
+}
+
 def download_file(url, destination, filename):
     """Download a file with progress reporting"""
-    
+
     print(f"  Downloading {filename}...")
     
     try:
@@ -51,22 +59,37 @@ def setup_model(models_path):
     print(f"  Description: {MODEL_INFO['description']}")
     print()
     
-    filepath = os.path.join(models_path, MODEL_INFO['filename'])
+    filepath_x4 = os.path.join(models_path, MODEL_INFO['filename'])
+    filepath_x2 = os.path.join(models_path, MODEL_INFO_X2['filename'])
     
-    # Check if model already exists
-    if os.path.exists(filepath):
-        file_size = os.path.getsize(filepath) / (1024 * 1024)
+    # Check if model already exists (x4)
+    if os.path.exists(filepath_x4):
+        file_size = os.path.getsize(filepath_x4) / (1024 * 1024)
         print(f"  Model already exists ({file_size:.1f} MB)")
         print(f"  Skipping download.")
-        success = True
+        success_x4 = True
     else:
-        # Download model
-        success = download_file(MODEL_INFO['url'], models_path, MODEL_INFO['filename'])
-        if success:
+        # Download model x4
+        success_x4 = download_file(MODEL_INFO['url'], models_path, MODEL_INFO['filename'])
+        if success_x4:
             print(f"  ✓ Model downloaded successfully")
         else:
             print(f"  ✗ Model download failed")
     
+    # Now ensure x2 model exists too (only added)
+    print()
+    print(f"Setting up RealESRGAN x2 model (for 2x upscale)...")
+    if os.path.exists(filepath_x2):
+        file_size = os.path.getsize(filepath_x2) / (1024 * 1024)
+        print(f"  Model already exists ({file_size:.1f} MB)")
+        print(f"  Skipping download.")
+        success_x2 = True
+    else:
+        success_x2 = download_file(MODEL_INFO_X2['url'], models_path, MODEL_INFO_X2['filename'])
+        if success_x2:
+            print(f"  ✓ x2 Model downloaded successfully")
+        else:
+            print(f"  ✗ x2 Model download failed")
     print()
     
     # Create model configuration file
@@ -76,6 +99,11 @@ def setup_model(models_path):
             'ultra_realistic': {
                 'model_file': MODEL_INFO['filename'],
                 'display_name': 'Realistic'
+            },
+            # Add x2 presets alongside existing ultra_realistic (minimal change)
+            'x2': {
+                'model_file': MODEL_INFO_X2['filename'],
+                'display_name': 'RealESRGAN x2'
             }
         }
     }
@@ -93,6 +121,8 @@ def setup_model(models_path):
     
     # Summary
     print("=" * 60)
+    # Success is True only if all succeeded (preserve original behavior but reflect all)
+    success = success_x4 and success_x2
     if success:
         print("Model setup completed successfully!")
         print()
@@ -106,9 +136,11 @@ def setup_model(models_path):
         print("Model setup failed!")
         print()
         print("You can download the model manually from:")
+        # Print all URLs (minimal necessary addition)
         print(MODEL_INFO['url'])
+        print(MODEL_INFO_X2['url'])
         print()
-        print(f"Save it to: {filepath}")
+        print(f"Save them to: {filepath_x4} and {filepath_x2}")
         return False
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'bmp'}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-SCALE_FACTORS = [2, 3, 5, 10]  # Available scaling multipliers
+SCALE_FACTORS = [2, 4]  # Available scaling multipliers (changed to only 2x, 4x)
 PRESET = 'ultra_realistic'  # Fixed preset - realistic upscaling only
 
 # Create Flask app
@@ -47,53 +47,50 @@ def load_models_config():
         print(f"ERROR loading models configuration: {e}")
         return None
 
-def initialize_upscaler(config):
-    """Initialize RealESRGAN upscaler for realistic upscaling"""
-    
-    if PRESET in upscalers:
-        return upscalers[PRESET]
-    
-    try:
-        preset_config = config['presets'][PRESET]
+def initialize_upscaler(config, scale=4):
+    if scale == 4:
+        cache_key = 'ultra_realistic'
+        preset_config = config['presets'][cache_key]
         model_path = os.path.join(config['models_path'], preset_config['model_file'])
-        
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found: {model_path}")
-        
-        # RealESRGAN_x4plus - Full RRDB network for photorealistic enhancement
-        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
         netscale = 4
-        
-        # Initialize upscaler with GPU/CPU auto-detection
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        
-        upscaler = RealESRGANer(
-            scale=netscale,
-            model_path=model_path,
-            model=model,
-            tile=400 if device == 'cuda' else 200,  # Smaller tiles for CPU
-            tile_pad=10,
-            pre_pad=0,
-            half=torch.cuda.is_available(),  # Use FP16 on GPU for speed
-            device=device
-        )
-        
-        upscalers[PRESET] = upscaler
-        print(f"✓ Initialized upscaler on {device.upper()}")
-        return upscaler
-        
-    except Exception as e:
-        print(f"ERROR initializing upscaler: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+    elif scale == 2:
+        cache_key = 'x2'
+        preset_config = config['presets'][cache_key]
+        model_path = os.path.join(config['models_path'], preset_config['model_file'])
+        netscale = 2
+    else:
+        raise ValueError(f"Unsupported scale factor: {scale}")
+
+    if cache_key in upscalers:
+        return upscalers[cache_key]
+
+    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=netscale)
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    half = torch.cuda.is_available()
+    tile = 400 if device == 'cuda' else 200
+
+    upscaler = RealESRGANer(
+        scale=netscale,
+        model_path=model_path,
+        model=model,
+        tile=tile,
+        tile_pad=10,
+        pre_pad=0,
+        half=half,
+        device=device
+    )
+
+    upscalers[cache_key] = upscaler
+    print(f"✓ Initialized upscaler on {device.upper()}")
+    return upscaler
 
 def upscale_with_factor(image_path, scale_factor, config):
     """Upscale image by a specific factor
     
     Args:
         image_path: Path to input image
-        scale_factor: Multiplier (2, 3, 5, or 10)
+        scale_factor: Multiplier (2, 4, or 8)
         config: Models configuration
     
     Returns:
@@ -109,11 +106,6 @@ def upscale_with_factor(image_path, scale_factor, config):
         original_height, original_width = img.shape[:2]
         print(f"Original image size: {original_width}x{original_height}")
         
-        # Initialize upscaler
-        upscaler = initialize_upscaler(config)
-        if upscaler is None:
-            raise ValueError(f"Failed to initialize upscaler")
-        
         # Calculate target dimensions
         target_width = original_width * scale_factor
         target_height = original_height * scale_factor
@@ -121,27 +113,24 @@ def upscale_with_factor(image_path, scale_factor, config):
         print(f"Upscaling {scale_factor}x...")
         print(f"Target size: {target_width}x{target_height}")
         
-        # The models natively upscale 4x, so we need to handle different scale factors
+        # Handle the limited set of scale factors: 2, 4, 8
         if scale_factor == 2:
-            # Upscale 4x then downscale to 2x
-            output, _ = upscaler.enhance(img, outscale=4)
-            output = cv2.resize(output, (target_width, target_height), interpolation=cv2.INTER_AREA)
-        elif scale_factor == 3:
-            # Upscale 4x then downscale to 3x
-            output, _ = upscaler.enhance(img, outscale=4)
-            output = cv2.resize(output, (target_width, target_height), interpolation=cv2.INTER_AREA)
-        elif scale_factor == 5:
-            # Upscale 4x, then upscale again by 1.25x
-            output, _ = upscaler.enhance(img, outscale=4)
-            output = cv2.resize(output, (target_width, target_height), interpolation=cv2.INTER_CUBIC)
-        elif scale_factor == 10:
-            # Upscale 4x twice (but limit to avoid memory issues)
-            # First pass: 4x
-            output, _ = upscaler.enhance(img, outscale=4)
-            # Second pass: resize to 10x total (2.5x from current size)
-            output = cv2.resize(output, (target_width, target_height), interpolation=cv2.INTER_CUBIC)
+            # Use a dedicated 2x model if available (true 2x)
+            upscaler2 = initialize_upscaler(config, scale=2)
+            if upscaler2 is None:
+                raise ValueError("Failed to initialize 2x upscaler")
+            output, _ = upscaler2.enhance(img, outscale=2)
+        
+        elif scale_factor == 4:
+            # Use the existing 4x model (preserve original behavior)
+            upscaler4 = initialize_upscaler(config, scale=4)
+            if upscaler4 is None:
+                raise ValueError("Failed to initialize 4x upscaler")
+            output, _ = upscaler4.enhance(img, outscale=4)
+        
         else:
-            # Default: use outscale parameter directly if supported
+            # Shouldn't happen because API validates, but keep fallback similar to original
+            upscaler = initialize_upscaler(config)
             output, _ = upscaler.enhance(img, outscale=scale_factor)
         
         final_height, final_width = output.shape[:2]
@@ -185,7 +174,7 @@ def upscale_to_resolution(image_path, target_width, target_height, config):
         original_aspect = original_width / original_height
         target_aspect = target_width / target_height
         
-        # Initialize upscaler
+        # Initialize upscaler (default to 4x preset)
         upscaler = initialize_upscaler(config)
         if upscaler is None:
             raise ValueError(f"Failed to initialize upscaler")
@@ -212,11 +201,16 @@ def upscale_to_resolution(image_path, target_width, target_height, config):
             # Native 4x upscale
             output, _ = upscaler.enhance(img, outscale=4)
         elif needed_scale == 2:
-            # Upscale 4x then downscale to 2x
-            output, _ = upscaler.enhance(img, outscale=4)
-            temp_width = original_width * 2
-            temp_height = original_height * 2
-            output = cv2.resize(output, (temp_width, temp_height), interpolation=cv2.INTER_AREA)
+            # Try to use 2x model if present (preserve original logic of 4x then downscale)
+            try:
+                upscaler2 = initialize_upscaler(config, scale=2)
+                output, _ = upscaler2.enhance(img, outscale=2)
+            except Exception:
+                # Fallback to 4x then downscale if 2x not present
+                output, _ = upscaler.enhance(img, outscale=4)
+                temp_width = original_width * 2
+                temp_height = original_height * 2
+                output = cv2.resize(output, (temp_width, temp_height), interpolation=cv2.INTER_AREA)
         elif needed_scale == 3:
             # Upscale 4x then downscale to 3x
             output, _ = upscaler.enhance(img, outscale=4)
