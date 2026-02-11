@@ -5,13 +5,14 @@ A free, open-source, offline AI-powered image upscaler that runs entirely on you
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
+![Release](https://img.shields.io/badge/release-v1.1.0-orange.svg)
 
 ## ✨ Features
 
 - 🚀 **High-Quality AI Upscaling** - Uses RealESRGAN for professional photorealistic results
 - 🔒 **100% Offline & Private** - All processing happens locally (after initial model download)
 - 📊 **Dual Upscaling Modes**:
-  - **Scale Factor**: Multiply image size by 2x, 3x, 5x, or 10x
+  - **Scale Factor**: Multiply image size by 2x or 4x using smart GPU-aware model selection
   - **Target Resolution**: Set exact dimensions (1080p, 4K, 8K, or custom)
 - 🎯 **Smart Non-Stretching** - Intelligent cropping maintains aspect ratio without distortion
 - 🖥️ **User-Friendly Web Interface** - Clean, intuitive browser-based UI
@@ -39,33 +40,28 @@ Perfect for:
 
 ### 1. Download or Clone
 
-```bash
-git clone https://github.com/poisonnightblade/image-upscaler.git
+git clone https://github.com/poisonnightblade/image-upscaler.git  
 cd image-upscaler
-```
 
 ### 2. Run Installation
 
 Double-click `Installation/install.bat` or run:
 
-```bash
-cd Installation
+cd Installation  
 install.bat
-```
 
 The installer will:
 - Create a Python virtual environment
 - Install all dependencies
-- Download the AI model (47MB)
+- Download the AI models (x2 and x4, ~50MB each)
+- Automatically select the optimal PyTorch build for your GPU (new!)
 
 ### 3. Start the Application
 
 Double-click `Project/start.bat` or run:
 
-```bash
-cd Project
+cd Project  
 start.bat
-```
 
 The app will automatically open at http://localhost:5000
 
@@ -78,7 +74,7 @@ See [SETUP.md](SETUP.md) for detailed platform-specific instructions.
 ### Scale Factor Mode
 1. Upload an image
 2. Select "Scale Factor" mode
-3. Choose your multiplier (2x, 3x, 5x, or 10x)
+3. Choose your multiplier (2x or 4x)
 4. Click "Upscale Image"
 5. Download your enhanced image
 
@@ -118,26 +114,22 @@ When using target resolution mode with different aspect ratios:
 
 ## 📁 Project Structure
 
-```
-image-upscaler/
-├── Installation/           # Setup scripts
-│   ├── install.bat        # Windows installer
-│   ├── step1.py          # Virtual environment setup
-│   ├── step2.py          # Dependency installation
-│   └── step3.py          # Model download
-├── Project/               # Main application
-│   ├── backend.py        # Flask server & AI logic
-│   ├── start.bat         # Windows launcher
-│   ├── models/           # AI model files (created during install)
-│   ├── venv/             # Virtual environment (created during install)
-│   └── web/              # Frontend files
-│       ├── index.html
-│       ├── script.js
-│       └── styles.css
-├── LICENSE               # MIT License
-├── README.md            # This file
-└── SETUP.md             # Detailed setup guide
-```
+image-upscaler/  
+├── Installation/         # Setup scripts  
+│   ├── install.bat       # Windows installer  
+│   ├── step1.py          # Virtual environment setup  
+│   ├── step2.py          # Dependency installation  
+│   └── step3.py          # Model download  
+├── Project/              # Main application  
+│   ├── backend.py        # Flask server & AI logic  
+│   ├── start.bat         # Windows launcher  
+│   ├── models/           # AI model files (created during install)  
+│   ├── venv/             # Virtual environment (created during install)  
+│   └── web/              # Frontend files  
+├── LICENSE               # MIT License  
+├── README.md             # This file  
+├── SETUP.md              # Detailed setup guide  
+└── CONTRIBUTING.md       # Contribution guidelines
 
 ## ⚙️ Configuration
 
@@ -145,7 +137,7 @@ image-upscaler/
 PNG, JPG, JPEG, WEBP, BMP (max 50MB)
 
 ### Resolution Limits
-- Scale factor mode: Up to 10x original size
+- Scale factor mode: Up to 4x original size (new)
 - Target resolution mode: Up to 20,000 × 20,000 pixels
 
 ### GPU Acceleration
@@ -155,16 +147,16 @@ Automatically detects and uses NVIDIA GPUs if CUDA is available. Falls back to C
 
 ### Common Issues
 
-**"Virtual environment not found"**
+**"Virtual environment not found"**  
 → Run `Installation/install.bat` first
 
-**"Model file not found"**
+**"Model file not found"**  
 → Re-run install.bat and complete Step 3
 
-**Out of memory errors**
+**Out of memory errors**  
 → Use smaller images or scale factors, or close other applications
 
-**Slow processing**
+**Slow processing**  
 → Install CUDA for GPU acceleration, or use smaller images
 
 See [SETUP.md#Troubleshooting](SETUP.md#troubleshooting) for more help.
@@ -175,18 +167,18 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 
 ### Third-Party Licenses
 
-- **RealESRGAN** - BSD-3-Clause (free for commercial use)
-- **BasicSR** - Apache-2.0
-- **PyTorch** - BSD-style
-- **Flask** - BSD-3-Clause
-- **OpenCV** - Apache-2.0
+- **RealESRGAN** - BSD-3-Clause (free for commercial use)  
+- **BasicSR** - Apache-2.0  
+- **PyTorch** - BSD-style  
+- **Flask** - BSD-3-Clause  
+- **OpenCV** - Apache-2.0  
 
 All libraries used in accordance with their respective licenses.
 
 ## 🙏 Acknowledgments
 
-- [RealESRGAN](https://github.com/xinntao/Real-ESRGAN) by Xintao Wang et al.
-- [BasicSR](https://github.com/XPixelGroup/BasicSR) super-resolution framework
+- [RealESRGAN](https://github.com/xinntao/Real-ESRGAN) by Xintao Wang et al.  
+- [BasicSR](https://github.com/XPixelGroup/BasicSR) super-resolution framework  
 - The open-source community
 
 ## 🤝 Contributing
