@@ -13,6 +13,7 @@ dist/
 
 # AI Models (downloaded during installation)
 Project/models/*.pth
+Project/pip_cache
 Project/models/*.onnx
 !Project/models/.gitkeep
 
